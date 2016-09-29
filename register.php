@@ -1,3 +1,30 @@
+<?php
+session_start();
+
+//connect to database
+$connectDB = mysqli_connect("localhost", "root", "", "test");
+
+if (isset($_POST['register_btn'])) {
+    $username = mysqli_real_escape_string($connectDB, $_POST['username']);
+    $email = mysqli_real_escape_string($connectDB, $_POST['email']);
+    $password = mysqli_real_escape_string($connectDB, $_POST['password']);
+    $repeat_password = mysqli_real_escape_string($connectDB, $_POST['repeat_password']);
+
+    if ($password == $repeat_password) {
+        //create user
+        $password = md5($password); //hass password before storing for security pupuese
+        $sql = "INSERT INTO users(username, email, password) VALUES('$username', '$email', '$password')";
+        mysqli_query($connectDB, $sql);
+        $_SESION['message'] = "You are logged in";
+        $_SESSION['username'] = $username;
+        header('location: welcome_page.php');
+    } else {
+        //failed creating user
+        $_SESION['message'] = "The two passwords do not match";
+    }
+}
+?>
+
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
@@ -21,43 +48,41 @@
         <div class="wrapper">
             <div class="content">
                 <div id="form_wrapper" class="form_wrapper">
-                    <form id="fadeOnLoad" class="register active">
+
+                    <?php
+                    if (isset($_SESSION['message'])) {
+                        echo "<div id=error_msg>" . $_SESSION['message'] . "<?div>";
+                        unset($_SESSION['message']);
+                    }
+                    ?>
+
+                    <form id="fadeOnLoad" class="register active" method="post" action="register.php">
                         <h3>Register</h3>
                         <div class="column">
                             <div>
-                                <label>First Name:</label>
-                                <input type="text" />
-                                <span class="error">This is an error</span>
-                            </div>
-                            <div>
-                                <label>Last Name:</label>
-                                <input type="text" />
+                                <label>Username:</label>
+                                <input name="username" type="text" />
                                 <span class="error">This is an error</span>
                             </div>
                             <div>
                                 <label>Email:</label>
-                                <input type="text" />
+                                <input name="email" type="text" />
                                 <span class="error">This is an error</span>
                             </div>
                             <div>
                                 <label>Password:</label>
-                                <input type="password" />
+                                <input type="password" name="password" />
                                 <span class="error">This is an error</span>
                             </div>
                             <div>
                                 <label>Repeat Password:</label>
-                                <input type="password" />
+                                <input type="password" name="repeat_password" />
                                 <span class="error">This is an error</span>
                             </div>
                         </div>
                         <div class="bottom">
-                            <!--							<div class="remember">
-                                                                                            <input type="checkbox" />
-                                                                                            <span>Send me updates</span>
-                                                                                    </div>-->
-                            <input type="submit" value="Register" />
-                            <a href="login.php" rel="login.php" class="linkform">Log in here</a>
-                            <div class="clear"></div>
+                            <input name="register_btn" type="submit" value="Register" />
+                            <a href="login.php" rel="login.php">Log in here</a>
                         </div>
                     </form>
                 </div>
@@ -67,6 +92,6 @@
 
 
         <!-- The JavaScript -->
-        <script type="text/javascript" src="js/jquery-3.js"></script>
+        <script type="text/javascript" src="../js/jquery-3.js"></script>
     </body>
 </html>
